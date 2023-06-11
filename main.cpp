@@ -7,7 +7,7 @@ HEPTA_CDH cdh(PB_5, PB_4, PB_3, PA_8, "sd");
 HEPTA_EPS eps(PA_0,PA_4);
 HEPTA_SENSOR sensor(PA_7,PB_7,PB_6,0xD0);
 HEPTA_COM com(PA_9,PA_10,9600);
-Serial sat(USBTX,USBRX,9600);
+RawSerial sat(USBTX,USBRX,9600);
 int main()
 {
     sat.printf("Xbee Uplink Downlink Mode\r\n");

@@ -8,8 +8,10 @@ HEPTA_EPS eps(PA_0,PA_4);
 HEPTA_SENSOR sensor(PA_7,PB_7,PB_6,0xD0);
 HEPTA_COM com(PA_9,PA_10,9600);
 RawSerial sat(USBTX,USBRX,9600);
+DigitalOut sw(PA_3);
 int main()
 {
+    sw = 1;
     sat.printf("Xbee Uplink Downlink Mode\r\n");
     int rcmd=0,cmdflag=0;
     float ax,ay,az;

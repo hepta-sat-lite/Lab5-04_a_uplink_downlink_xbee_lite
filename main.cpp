@@ -1,35 +1,47 @@
 #include "mbed.h"
-#include "HEPTA_EPS.h"
-#include "HEPTA_CDH.h"
-#include "HEPTA_SENSOR.h"
-#include "HEPTA_COM.h"
-HEPTA_CDH cdh(PB_5, PB_4, PB_3, PA_8, "sd");
-HEPTA_EPS eps(PA_0,PA_4);
-HEPTA_SENSOR sensor(PA_7,PB_7,PB_6,0xD0);
-HEPTA_COM com(PA_9,PA_10,9600);
-RawSerial sat(USBTX,USBRX,9600);
+#include "LITE_CDH.h"
+#include "LITE_EPS.h"
+#include "LITE_SENSOR.h"
+#include "LITE_COM.h"
+
+RawSerial pc(USBTX,USBRX,9600);
+LITE_CDH cdh(PB_5, PB_4, PB_3, PA_8, "sd", PA_3);
+LITE_EPS eps(PA_0,PA_4);
+LITE_SENSOR sensor(PA_7,PB_7,PB_6);
+LITE_COM com(PA_9,PA_10,9600);
+
 int main()
 {
-    sat.printf("Xbee Uplink Downlink Mode\r\n");
-    int rcmd=0,cmdflag=0;
-    float ax,ay,az;
     eps.turn_on_regulator();//turn on 3.3V conveter
-    sensor.setup();
-    for(int i=0;i<10;i++){
+    cdh.turn_on_analogSW();//turn on transceiver
+    int i = 0,rcmd=0,cmdflag=0;
+    float bt,ax,ay,az;
+    com.printf("Count Up!\r\n");
+    while(1) {
+        com.printf("num = %d\r\n",i);
+        i++;
+        wait(1.0);
         com.xbee_receive(&rcmd,&cmdflag);
-        com.printf("num=%d\r\n",i);
-        if(cmdflag==1){
-            if(rcmd=='a'){
-                sat.printf("rcmd=%c,cmdflag=%d\r\n",rcmd,cmdflag);
-                com.printf("Hepta-Sat Lite Uplink Ok\r\n");
-                for(int i=0;i<10;i++){
+        pc.printf("rcmd=%d, cmdflag=%d\r\n",rcmd, cmdflag);
+        if (cmdflag == 1) {
+            if (rcmd == 'a') {
+                sensor.set_up();
+                pc.printf("Command Get %d\r\n",rcmd);
+                com.printf("HEPTA Uplink OK\r\n");
+                pc.printf("===================\r\n");
+                pc.printf("Accel sensing Mode\r\n");
+                pc.printf("===================\r\n");
+                for(int ii = 0; ii < 10; ii++) {
                     sensor.sen_acc(&ax,&ay,&az);
-                    com.printf("%f,%f,%f\r\n",ax,ay,az);
-                    wait_ms(1000);
+                    eps.vol(&bt);
+                    com.printf("AX = %f\r\n",ax);
+                    com.printf("AY = %f\r\n",ay);
+                    com.printf("AZ = %f\r\n",az);
+                    com.printf("V = %f\r\n",bt);
+                    wait(0.5);
                 }
             }
             com.initialize();
         }
-        wait_ms(1000);
     }
 }
